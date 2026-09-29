@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamming Code Interactive Laboratory — 64-bit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M2 12h4l2-9 5 18 3-9h6"/></svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">HAMMING LAB</div>
+        <div class="brand-sub">64-bit · SEC</div>
+      </div>
+    </div>
+
+    <nav class="sidenav">
+      <div class="nav-group-label">WORKSPACE</div>
+      <button class="nav-btn active" data-target="pg-dashboard" id="nb-dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+        <span class="nav-dot" id="nd-dashboard"></span>
+      </button>
+      <button class="nav-btn" data-target="pg-encode" id="nb-encode">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>Encode</span>
+        <span class="nav-dot" id="nd-encode"></span>
+      </button>
+      <button class="nav-btn" data-target="pg-inject" id="nb-inject">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>Inject Error</span>
+        <span class="nav-dot" id="nd-inject"></span>
+      </button>
+      <button class="nav-btn" data-target="pg-detect" id="nb-detect">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span>Detection</span>
+        <span class="nav-dot" id="nd-detect"></span>
+      </button>
+      <button class="nav-btn" data-target="pg-correct" id="nb-correct">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>Correction</span>
+        <span class="nav-dot" id="nd-correct"></span>
+      </button>
+      <div class="nav-divider"></div>
+      <div class="nav-group-label">REFERENCE</div>
+      <button class="nav-btn" data-target="pg-math" id="nb-math">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span>Mathematics</span>
+      </button>
+      <button class="nav-btn" data-target="pg-verify" id="nb-verify">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span>Verify</span>
+        <span class="nav-dot" id="nd-verify"></span>
+      </button>
+      <button class="nav-btn" data-target="pg-about" id="nb-about">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>About</span>
+      </button>
+    </nav>
+
+    <!-- Sidebar Workflow -->
+    <div class="sidebar-wf">
+      <div class="swf-title">WORKFLOW STATE</div>
+      <div class="swf-list">
+        <div class="swf-row ready" id="swf-input">   <span class="swf-dot"></span><span class="swf-name">Input</span>   <span class="swf-tag" id="swft-input">READY</span></div>
+        <div class="swf-line"></div>
+        <div class="swf-row locked" id="swf-encode"> <span class="swf-dot"></span><span class="swf-name">Encode</span>  <span class="swf-tag" id="swft-encode">LOCKED</span></div>
+        <div class="swf-line"></div>
+        <div class="swf-row locked" id="swf-inject"> <span class="swf-dot"></span><span class="swf-name">Inject</span>  <span class="swf-tag" id="swft-inject">LOCKED</span></div>
+        <div class="swf-line"></div>
+        <div class="swf-row locked" id="swf-detect"> <span class="swf-dot"></span><span class="swf-name">Detect</span>  <span class="swf-tag" id="swft-detect">LOCKED</span></div>
+        <div class="swf-line"></div>
+        <div class="swf-row locked" id="swf-correct"><span class="swf-dot"></span><span class="swf-name">Correct</span> <span class="swf-tag" id="swft-correct">LOCKED</span></div>
+        <div class="swf-line"></div>
+        <div class="swf-row locked" id="swf-verify"> <span class="swf-dot"></span><span class="swf-name">Verify</span>  <span class="swf-tag" id="swft-verify">LOCKED</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-foot">
+      <button class="btn-reset" id="resetBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;flex-shrink:0"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.01"/></svg>
+        RESET SIMULATION
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-crumb" id="topbarCrumb">Dashboard</div>
+      </div>
+      <div class="topbar-center">64-Bit Hamming Code Interactive Laboratory</div>
+      <div class="topbar-right">
+        <div class="state-pill" id="statePill">
+          <span class="state-dot"></span>
+          <span id="stateText">INITIAL</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="workspace">
+
+      <!-- ═══════ PAGE: DASHBOARD ═══════ -->
+      <section class="page active" id="pg-dashboard">
+        <div class="ph">
+          <div class="ph-text">
+            <h1 class="ph-title">HAMMING CODE LAB</h1>
+            <p class="ph-sub">64-Bit Single-Bit Error Detection &amp; Correction · Academic Simulator</p>
+          </div>
+          <div class="ph-tags">
+            <span class="tag">COA</span>
+            <span class="tag">CN</span>
+            <span class="tag accent">SEC</span>
+          </div>
+        </div>
+
+        <div class="g4">
+          <div class="sc blue"><div class="sc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="13" y2="13"/></svg></div><div class="sc-body"><div class="sc-lbl">DATA BITS</div><div class="sc-val">64</div><div class="sc-sub">Input message bits (m)</div></div></div>
+          <div class="sc purple"><div class="sc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div><div class="sc-body"><div class="sc-lbl">PARITY BITS</div><div class="sc-val">7</div><div class="sc-sub">Redundancy bits (r)</div></div></div>
+          <div class="sc green"><div class="sc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></div><div class="sc-body"><div class="sc-lbl">CODEWORD</div><div class="sc-val">71</div><div class="sc-sub">Total bits (m + r)</div></div></div>
+          <div class="sc amber"><div class="sc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="sc-body"><div class="sc-lbl">ERROR MODEL</div><div class="sc-val sm">Single Bit</div><div class="sc-sub">SEC — Single Error Correction</div></div></div>
+        </div>
+
+        <div class="sec-lbl">SIMULATION WORKFLOW</div>
+        <div class="wf-pipeline">
+          <div class="wfn" id="wfn-1"><div class="wfn-num">01</div><div class="wfn-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="wfn-name">INPUT</div><div class="wfn-desc">64-bit binary data</div><div class="wfn-bdg ready" id="wfb-1">READY</div></div>
+          <div class="wf-arr">→</div>
+          <div class="wfn locked" id="wfn-2"><div class="wfn-num">02</div><div class="wfn-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="wfn-name">ENCODE</div><div class="wfn-desc">71-bit codeword</div><div class="wfn-bdg locked" id="wfb-2">LOCKED</div></div>
+          <div class="wf-arr">→</div>
+          <div class="wfn locked" id="wfn-3"><div class="wfn-num">03</div><div class="wfn-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="wfn-name">INJECT</div><div class="wfn-desc">Flip a single bit</div><div class="wfn-bdg locked" id="wfb-3">LOCKED</div></div>
+          <div class="wf-arr">→</div>
+          <div class="wfn locked" id="wfn-4"><div class="wfn-num">04</div><div class="wfn-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="wfn-name">DETECT</div><div class="wfn-desc">Syndrome calc</div><div class="wfn-bdg locked" id="wfb-4">LOCKED</div></div>
+          <div class="wf-arr">→</div>
+          <div class="wfn locked" id="wfn-5"><div class="wfn-num">05</div><div class="wfn-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="wfn-name">CORRECT</div><div class="wfn-desc">Flip detected bit</div><div class="wfn-bdg locked" id="wfb-5">LOCKED</div></div>
+          <div class="wf-arr">→</div>
+          <div class="wfn locked" id="wfn-6"><div class="wfn-num">06</div><div class="wfn-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><div class="wfn-name">VERIFY</div><div class="wfn-desc">Data integrity</div><div class="wfn-bdg locked" id="wfb-6">LOCKED</div></div>
+        </div>
+
+        <div class="sec-lbl" style="margin-top:2rem">QUICK START</div>
+        <div class="g3">
+          <div class="icard"><div class="icard-step">STEP 1</div><div class="icard-title">Enter or Generate Data</div><div class="icard-body">Go to <strong>Encode</strong>, enter exactly 64 binary bits, or click <em>Generate Random Data</em>. Then click <em>Encode Data</em>.</div><button class="btn-link" onclick="gotoPage('pg-encode')">Go to Encode →</button></div>
+          <div class="icard"><div class="icard-step">STEP 2</div><div class="icard-title">Inject an Error</div><div class="icard-body">After encoding go to <strong>Inject Error</strong>. Select a bit position (1–71) and click <em>Inject Error</em> to flip that bit.</div><button class="btn-link" onclick="gotoPage('pg-inject')">Go to Inject Error →</button></div>
+          <div class="icard"><div class="icard-step">STEP 3</div><div class="icard-title">Detect &amp; Correct</div><div class="icard-body">Go to <strong>Detection</strong> and click <em>Detect Error</em>. Then go to <strong>Correction</strong> and click <em>Correct Error</em>.</div><button class="btn-link" onclick="gotoPage('pg-detect')">Go to Detection →</button></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: ENCODE ═══════ -->
+      <section class="page hidden" id="pg-encode">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">ENCODING WORKSPACE</h1><p class="ph-sub">Enter 64 binary bits and generate the 71-bit Hamming codeword</p></div>
+          <div class="stage-bdg" id="enc-badge">● READY</div>
+        </div>
+
+        <div class="card">
+          <div class="card-hdr"><div class="card-ttl">INPUT DATA</div><div class="card-dsc">Enter exactly 64 binary bits (0s and 1s only)</div></div>
+          <div class="card-body">
+            <textarea id="dataInput" class="bin-ta" placeholder="1011001011100101010110010110100111010100101100101010110010101100" rows="3" maxlength="64" spellcheck="false" autocomplete="off"></textarea>
+            <div class="inp-bar">
+              <div class="prog-wrap"><div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div><span class="prog-lbl" id="inputCount">0 / 64 bits</span></div>
+              <div class="inp-val" id="inputValidationMsg"></div>
+            </div>
+            <div class="inp-btns">
+              <button class="btn btn-sec" id="randomDataBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>Generate Random Data</button>
+              <button class="btn btn-pri" id="encodeBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Encode Data</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="g3" style="margin-top:1.25rem">
+          <div class="mini-card"><div class="mc-lbl">FORMULA</div><div class="mc-val mono-val">2<sup>r</sup> &ge; m + r + 1</div></div>
+          <div class="mini-card"><div class="mc-lbl">CALCULATION</div><div class="mc-val mono-val">2<sup>7</sup> &ge; 64+7+1 &nbsp;→&nbsp; 128 &ge; 72 ✓</div></div>
+          <div class="mini-card"><div class="mc-lbl">RESULT</div><div class="mc-val">r = 7 → <strong>71-bit codeword</strong></div></div>
+        </div>
+
+        <div class="hidden" id="encodingResultArea">
+          <div class="g3" style="margin-top:1.25rem">
+            <div class="res-card" style="border-color:var(--c-blue-b)"><div class="rc-lbl">ORIGINAL DATA</div><div class="rc-val" style="color:var(--c-blue)">64 bits</div></div>
+            <div class="res-card" style="border-color:var(--c-pur-b)"><div class="rc-lbl">PARITY BITS</div><div class="rc-val" style="color:var(--c-pur)">7 bits</div></div>
+            <div class="res-card" style="border-color:var(--c-grn-b)"><div class="rc-lbl">ENCODED CODEWORD</div><div class="rc-val" style="color:var(--c-grn)">71 bits</div></div>
+          </div>
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr"><div class="card-ttl">ORIGINAL 64-BIT DATA</div></div>
+            <div class="card-body"><div class="bin-disp" id="originalDataDisplay">—</div></div>
+          </div>
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr">
+              <div class="card-ttl">71-BIT ENCODED CODEWORD</div>
+              <div class="legend"><span class="li"><span class="ld ld-par"></span>Parity Bit (pos 1,2,4,8,16,32,64)</span><span class="li"><span class="ld ld-dat"></span>Data Bit</span></div>
+            </div>
+            <div class="card-body"><div class="bscroll"><div class="gbits" id="codewordVisualizer"></div></div></div>
+          </div>
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr"><div class="card-ttl">PARITY BIT VALUES</div><div class="card-dsc">Computed value for each parity position</div></div>
+            <div class="card-body"><div class="pv-grid" id="parityValGrid"></div></div>
+          </div>
+          <div class="next-hint" id="encNextHint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+            Encoding complete. Navigate to <strong>Inject Error</strong> to introduce a single-bit error.
+            <button class="btn-link" onclick="gotoPage('pg-inject')">Go to Inject Error →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: INJECT ERROR ═══════ -->
+      <section class="page hidden" id="pg-inject">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">ERROR INJECTION</h1><p class="ph-sub">Select a bit position and inject a single-bit error into the codeword</p></div>
+          <div class="stage-bdg" id="inj-badge">○ WAITING</div>
+        </div>
+        <div class="lock-notice" id="inj-lock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div><strong>Encoding required first.</strong> Go to Encode, enter 64 bits, and click Encode Data.</div>
+          <button class="btn btn-sec btn-sm" onclick="gotoPage('pg-encode')">Go to Encode</button>
+        </div>
+        <div id="inj-workspace" class="hidden">
+          <div class="card">
+            <div class="card-hdr"><div class="card-ttl">ORIGINAL CODEWORD (71 bits)</div><div class="legend"><span class="li"><span class="ld ld-par"></span>Parity</span><span class="li"><span class="ld ld-dat"></span>Data</span></div></div>
+            <div class="card-body"><div class="bscroll"><div class="gbits" id="injOrigViz"></div></div></div>
+          </div>
+
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr"><div class="card-ttl">ERROR INJECTION CONTROL</div><div class="card-dsc">Select the bit position to flip (1–71)</div></div>
+            <div class="card-body">
+              <div class="inj-ctrl">
+                <div class="pos-blk">
+                  <label class="flbl">ERROR POSITION</label>
+                  <div class="pos-spin"><button class="spin-btn" id="posDecBtn">−</button><input type="number" id="errorPositionInput" class="pos-inp" min="1" max="71" value="1"><button class="spin-btn" id="posIncBtn">+</button></div>
+                  <div class="pos-hint" id="posHint">Position 1 · Parity Bit P1</div>
+                </div>
+                <div class="flip-prev">
+                  <div class="fp-col"><div class="fp-lbl">CURRENT BIT</div><div class="fp-val" id="selBitBefore">—</div></div>
+                  <div class="fp-arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                  <div class="fp-col"><div class="fp-lbl">AFTER FLIP</div><div class="fp-val err" id="selBitAfter">—</div></div>
+                </div>
+                <button class="btn btn-dng btn-lg" id="injectBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  INJECT ERROR
+                </button>
+              </div>
+              <div style="margin-top:1.25rem">
+                <label class="flbl">OR CLICK A BIT DIRECTLY</label>
+                <div class="bscroll" style="margin-top:0.5rem"><div class="gbits interactive" id="injClickViz"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hidden" id="injResultArea">
+            <div class="card err-card" style="margin-top:1.25rem">
+              <div class="card-hdr err-hdr">
+                <div class="card-ttl" style="color:var(--c-err)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>CORRUPTED CODEWORD (71 bits)</div>
+                <div class="inj-meta"><span>Position: <strong id="injPosDisp">—</strong></span><span>Original: <strong id="injOrigBit">—</strong></span><span>Corrupted: <strong class="err-txt" id="injNewBit">—</strong></span></div>
+              </div>
+              <div class="card-body">
+                <div class="bscroll"><div class="gbits" id="corruptedVisualizer"></div></div>
+                <div class="legend" style="margin-top:0.75rem"><span class="li"><span class="ld ld-par"></span>Parity</span><span class="li"><span class="ld ld-dat"></span>Data</span><span class="li"><span class="ld ld-err"></span>Error</span></div>
+              </div>
+            </div>
+            <div class="inj-banner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0;color:var(--c-err)"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div><strong>Single-bit error injected at position <span id="injBannerPos">—</span>.</strong> Detection has NOT been performed. Navigate to Detection and click <em>Detect Error</em>.</div>
+              <button class="btn-link" onclick="gotoPage('pg-detect')">Go to Detection →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: DETECTION ═══════ -->
+      <section class="page hidden" id="pg-detect">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">ERROR DETECTION</h1><p class="ph-sub">Click Detect Error to perform syndrome calculation manually</p></div>
+          <div class="stage-bdg" id="det-badge">○ WAITING</div>
+        </div>
+        <div class="lock-notice" id="det-lock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div><strong>Error injection required first.</strong> Go to Inject Error and click Inject Error.</div>
+          <button class="btn btn-sec btn-sm" onclick="gotoPage('pg-inject')">Go to Inject Error</button>
+        </div>
+        <div id="det-workspace" class="hidden">
+          <div class="card">
+            <div class="card-hdr"><div class="card-ttl">RECEIVED CODEWORD (CORRUPTED)</div><div class="legend"><span class="li"><span class="ld ld-par"></span>Parity</span><span class="li"><span class="ld ld-dat"></span>Data</span><span class="li"><span class="ld ld-err"></span>Error</span></div></div>
+            <div class="card-body"><div class="bscroll"><div class="gbits" id="detCorruptedViz"></div></div></div>
+          </div>
+
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr"><div class="card-ttl">DETECTION CONTROL</div></div>
+            <div class="card-body">
+              <div class="pre-state">
+                <div class="pre-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                <div class="pre-txt"><strong>Detection has not been performed.</strong><span>Click the button below to calculate the syndrome and identify the error position.</span></div>
+              </div>
+              <button class="btn btn-pri btn-lg" id="detectBtn" style="margin-top:1.25rem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                DETECT ERROR
+              </button>
+            </div>
+          </div>
+
+          <div class="hidden" id="detResultArea">
+            <div class="card" style="margin-top:1.25rem">
+              <div class="card-hdr"><div class="card-ttl">SYNDROME CALCULATION</div><div class="card-dsc">Non-zero parity checks indicate which parity failed</div></div>
+              <div class="card-body">
+                <div class="syn-row">
+                  <div class="syn-cell"><div class="syn-lbl">P64</div><div class="syn-box" id="s64">—</div><div class="syn-w">bit 6</div></div>
+                  <div class="syn-cell"><div class="syn-lbl">P32</div><div class="syn-box" id="s32">—</div><div class="syn-w">bit 5</div></div>
+                  <div class="syn-cell"><div class="syn-lbl">P16</div><div class="syn-box" id="s16">—</div><div class="syn-w">bit 4</div></div>
+                  <div class="syn-cell"><div class="syn-lbl">P8</div><div class="syn-box" id="s8">—</div><div class="syn-w">bit 3</div></div>
+                  <div class="syn-cell"><div class="syn-lbl">P4</div><div class="syn-box" id="s4">—</div><div class="syn-w">bit 2</div></div>
+                  <div class="syn-cell"><div class="syn-lbl">P2</div><div class="syn-box" id="s2">—</div><div class="syn-w">bit 1</div></div>
+                  <div class="syn-cell"><div class="syn-lbl">P1</div><div class="syn-box" id="s1">—</div><div class="syn-w">bit 0</div></div>
+                </div>
+                <div class="syn-sum-grid">
+                  <div class="ssg"><div class="ssg-lbl">SYNDROME (BINARY)</div><div class="ssg-val" id="synBin">—</div></div>
+                  <div class="ssg"><div class="ssg-lbl">SYNDROME (DECIMAL)</div><div class="ssg-val" id="synDec">—</div></div>
+                  <div class="ssg"><div class="ssg-lbl">ERROR POSITION</div><div class="ssg-val" id="detPos">—</div></div>
+                  <div class="ssg"><div class="ssg-lbl">DETECTED BIT VALUE</div><div class="ssg-val" id="detBitVal">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:1.25rem">
+              <div class="card-hdr"><div class="card-ttl">SYNDROME BINARY DECOMPOSITION</div><div class="card-dsc">The syndrome value in binary directly identifies the error position</div></div>
+              <div class="card-body"><div id="synExplain" class="syn-explain"></div></div>
+            </div>
+
+            <div class="det-banner" id="detBanner">
+              <div class="db-ico" id="dbIco">?</div>
+              <div><div class="db-ttl" id="dbTtl">—</div><div class="db-dsc" id="dbDsc">—</div></div>
+            </div>
+
+            <div class="next-hint" id="detNextHint" style="margin-top:1rem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+              Error detected. Navigate to <strong>Correction</strong> and click <em>Correct Error</em> to fix the bit.
+              <button class="btn-link" onclick="gotoPage('pg-correct')">Go to Correction →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: CORRECTION ═══════ -->
+      <section class="page hidden" id="pg-correct">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">ERROR CORRECTION</h1><p class="ph-sub">Click Correct Error to flip the detected bit and restore the original data</p></div>
+          <div class="stage-bdg" id="cor-badge">○ WAITING</div>
+        </div>
+        <div class="lock-notice" id="cor-lock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div><strong>Detection required first.</strong> Go to Detection and click Detect Error.</div>
+          <button class="btn btn-sec btn-sm" onclick="gotoPage('pg-detect')">Go to Detection</button>
+        </div>
+        <div id="cor-workspace" class="hidden">
+          <div class="g3" style="margin-bottom:1.25rem">
+            <div class="res-card" style="border-color:var(--c-err-b)"><div class="rc-lbl">DETECTED ERROR POSITION</div><div class="rc-val" style="color:var(--c-err)" id="corDetPos">—</div></div>
+            <div class="res-card" style="border-color:var(--c-err-b)"><div class="rc-lbl">BIT VALUE (CORRUPTED)</div><div class="rc-val" style="color:var(--c-err)" id="corDetBit">—</div></div>
+            <div class="res-card"><div class="rc-lbl">CORRECTION STATUS</div><div class="rc-val" id="corStatusMini">Pending</div></div>
+          </div>
+
+          <div class="card">
+            <div class="card-hdr"><div class="card-ttl">CORRECTION CONTROL</div></div>
+            <div class="card-body">
+              <div class="pre-state">
+                <div class="pre-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                <div class="pre-txt"><strong>Correction has not been performed.</strong><span>Click the button below to flip the bit at position <span id="corPrePos">—</span> and restore the codeword.</span></div>
+              </div>
+              <button class="btn btn-suc btn-lg" id="correctBtn" style="margin-top:1.25rem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                CORRECT ERROR
+              </button>
+            </div>
+          </div>
+
+          <div class="hidden" id="corResultArea">
+            <div class="card" style="margin-top:1.25rem">
+              <div class="card-hdr"><div class="card-ttl">CODEWORD COMPARISON</div></div>
+              <div class="card-body">
+                <div class="cmp-grid">
+                  <div><div class="cmp-lbl" style="color:var(--c-err)"><span class="cmp-dot" style="background:var(--c-err)"></span>BEFORE CORRECTION (CORRUPTED)</div><div class="bscroll"><div class="gbits" id="corBeforeViz"></div></div></div>
+                  <div><div class="cmp-lbl" style="color:var(--c-grn)"><span class="cmp-dot" style="background:var(--c-grn)"></span>AFTER CORRECTION (RESTORED)</div><div class="bscroll"><div class="gbits" id="corAfterViz"></div></div></div>
+                </div>
+                <div class="legend" style="margin-top:0.75rem"><span class="li"><span class="ld ld-par"></span>Parity</span><span class="li"><span class="ld ld-dat"></span>Data</span><span class="li"><span class="ld ld-err"></span>Error</span><span class="li"><span class="ld ld-cor"></span>Corrected</span></div>
+              </div>
+            </div>
+
+            <div class="cor-banner" id="corBanner"><div class="cb-ico">✓</div><div><div class="cb-ttl" id="cbTtl">—</div><div class="cb-dsc" id="cbDsc">—</div></div></div>
+
+            <div class="card" style="margin-top:1.25rem">
+              <div class="card-hdr"><div class="card-ttl">EXTRACTED 64-BIT DATA</div><div class="card-dsc">Data bits removed from parity positions in the corrected codeword</div></div>
+              <div class="card-body"><div class="bin-disp grn-disp" id="extractedDisp">—</div></div>
+            </div>
+
+            <div class="card" style="margin-top:1.25rem">
+              <div class="card-hdr"><div class="card-ttl">DATA VERIFICATION</div></div>
+              <div class="card-body">
+                <div class="ver-cmp">
+                  <div class="ver-col"><div class="ver-lbl">ORIGINAL INPUT (64 bits)</div><div class="bin-disp" id="verOrigDisp">—</div></div>
+                  <div class="ver-vs">VS</div>
+                  <div class="ver-col"><div class="ver-lbl">EXTRACTED DATA (64 bits)</div><div class="bin-disp" id="verExtDisp">—</div></div>
+                </div>
+                <div class="ver-banner" id="verBanner"><div class="vb-ico" id="vbIco">?</div><div class="vb-txt" id="vbTxt">—</div></div>
+              </div>
+            </div>
+
+            <div class="next-hint" style="margin-top:1rem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Correction complete. Navigate to <strong>Verify</strong> for a full simulation summary.
+              <button class="btn-link" onclick="gotoPage('pg-verify')">Go to Verify →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: MATHEMATICS ═══════ -->
+      <section class="page hidden" id="pg-math">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">MATHEMATICAL FOUNDATIONS</h1><p class="ph-sub">Theory, formulas, and interactive analysis of the 64-bit Hamming Code</p></div>
+        </div>
+
+        <div class="tabs-bar">
+          <button class="tab-btn active" data-tab="mt-structure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>Codeword Structure</button>
+          <button class="tab-btn" data-tab="mt-coverage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>Parity Coverage</button>
+          <button class="tab-btn" data-tab="mt-logic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Encoding Logic</button>
+          <button class="tab-btn" data-tab="mt-matrix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Advanced Matrix</button>
+        </div>
+
+        <!-- TAB: STRUCTURE -->
+        <div class="tab-panel active" id="mt-structure">
+          <div class="g2">
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl">HAMMING CODE FORMULA</div></div>
+              <div class="card-body">
+                <div class="math-f">2<sup>r</sup> &ge; m + r + 1</div>
+                <div class="mvt">
+                  <div class="mvt-row"><span class="mvt-s">m</span><span class="mvt-e">=</span><span class="mvt-d">Number of data bits</span><span class="mvt-v">64</span></div>
+                  <div class="mvt-row"><span class="mvt-s">r</span><span class="mvt-e">=</span><span class="mvt-d">Number of parity bits</span><span class="mvt-v">?</span></div>
+                  <div class="mvt-row"><span class="mvt-s">n</span><span class="mvt-e">=</span><span class="mvt-d">Total codeword length</span><span class="mvt-v">m+r</span></div>
+                </div>
+                <div class="deriv">
+                  <div class="dv-row"><span class="dv-n">1</span><span>Try r=6: &nbsp;2<sup>6</sup>=64 &nbsp;vs&nbsp; 64+6+1=71 &nbsp;→&nbsp; 64&lt;71 ✗</span></div>
+                  <div class="dv-row"><span class="dv-n">2</span><span>Try r=7: &nbsp;2<sup>7</sup>=128 &nbsp;vs&nbsp; 64+7+1=72 &nbsp;→&nbsp; 128≥72 ✓</span></div>
+                  <div class="dv-row res"><span class="dv-n">∴</span><span><strong>r = 7</strong> parity bits &nbsp;→&nbsp; n = 64+7 = <strong>71 bits</strong></span></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl">PARITY BIT POSITIONS</div></div>
+              <div class="card-body">
+                <p class="card-dsc-p">Parity bits occupy positions that are exact powers of 2. All remaining 64 positions hold data bits.</p>
+                <div class="pp-grid">
+                  <div class="pp-card"><div class="pp-name">P1</div><div class="pp-pos">Position 1</div><div class="pp-pow">2⁰</div></div>
+                  <div class="pp-card"><div class="pp-name">P2</div><div class="pp-pos">Position 2</div><div class="pp-pow">2¹</div></div>
+                  <div class="pp-card"><div class="pp-name">P4</div><div class="pp-pos">Position 4</div><div class="pp-pow">2²</div></div>
+                  <div class="pp-card"><div class="pp-name">P8</div><div class="pp-pos">Position 8</div><div class="pp-pow">2³</div></div>
+                  <div class="pp-card"><div class="pp-name">P16</div><div class="pp-pos">Position 16</div><div class="pp-pow">2⁴</div></div>
+                  <div class="pp-card"><div class="pp-name">P32</div><div class="pp-pos">Position 32</div><div class="pp-pow">2⁵</div></div>
+                  <div class="pp-card"><div class="pp-name">P64</div><div class="pp-pos">Position 64</div><div class="pp-pow">2⁶</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr"><div class="card-ttl">71-BIT POSITION MAP</div><div class="card-dsc">Parity (P) vs Data (D) positions — static structure</div></div>
+            <div class="card-body"><div class="bscroll"><div class="gbits" id="structureMapViz"></div></div><div class="legend" style="margin-top:0.75rem"><span class="li"><span class="ld ld-par"></span>Parity (7 positions: 1,2,4,8,16,32,64)</span><span class="li"><span class="ld ld-dat"></span>Data (64 positions)</span></div></div>
+          </div>
+        </div>
+
+        <!-- TAB: PARITY COVERAGE -->
+        <div class="tab-panel hidden" id="mt-coverage">
+          <div class="card">
+            <div class="card-hdr"><div class="card-ttl">INTERACTIVE PARITY COVERAGE</div><div class="card-dsc">Select a parity bit to highlight all positions it covers. A position is covered by P<sub>k</sub> if bit k is set in the binary representation of the position number.</div></div>
+            <div class="card-body">
+              <div class="psel-row">
+                <button class="btn-par active" data-p="1">P1 <span class="ps-cnt" id="psc-1"></span></button>
+                <button class="btn-par" data-p="2">P2 <span class="ps-cnt" id="psc-2"></span></button>
+                <button class="btn-par" data-p="4">P4 <span class="ps-cnt" id="psc-4"></span></button>
+                <button class="btn-par" data-p="8">P8 <span class="ps-cnt" id="psc-8"></span></button>
+                <button class="btn-par" data-p="16">P16 <span class="ps-cnt" id="psc-16"></span></button>
+                <button class="btn-par" data-p="32">P32 <span class="ps-cnt" id="psc-32"></span></button>
+                <button class="btn-par" data-p="64">P64 <span class="ps-cnt" id="psc-64"></span></button>
+              </div>
+              <div class="cov-info" id="covInfo">P1 checks all positions where bit 0 (LSB) of the position number is 1: 1, 3, 5, 7, 9, 11, ...</div>
+              <div class="bscroll" style="margin-top:0.75rem"><div class="gbits" id="coverageViz"></div></div>
+              <div class="legend" style="margin-top:0.75rem"><span class="li"><span class="ld ld-hl"></span>Covered by selected parity</span><span class="li"><span class="ld ld-dim"></span>Not covered</span></div>
+              <div class="cov-list" id="covList"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: ENCODING LOGIC -->
+        <div class="tab-panel hidden" id="mt-logic">
+          <div class="g2">
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl">ENCODING ALGORITHM (STEP BY STEP)</div></div>
+              <div class="card-body">
+                <div class="algo">
+                  <div class="as"><div class="as-n">1</div><div class="as-b"><div class="as-t">Accept 64-bit Input</div><div class="as-d">Receive message bits m₁, m₂, …, m₆₄</div><div class="as-data" id="lg-step1">No data encoded yet.</div></div></div>
+                  <div class="as"><div class="as-n">2</div><div class="as-b"><div class="as-t">Reserve Parity Positions</div><div class="as-d">Positions 1, 2, 4, 8, 16, 32, 64 are reserved. All other 64 positions hold data.</div></div></div>
+                  <div class="as"><div class="as-n">3</div><div class="as-b"><div class="as-t">Insert Data Bits</div><div class="as-d">Fill non-parity positions in order: 3, 5, 6, 7, 9–15, 17–31, 33–63, 65–71</div></div></div>
+                  <div class="as"><div class="as-n">4</div><div class="as-b"><div class="as-t">Calculate Parity Bits</div><div class="as-d">For each P<sub>k</sub>: XOR all bits at positions where bit k of position is 1</div><div class="as-formula">P<sub>k</sub> = XOR of bits where position bit k = 1</div></div></div>
+                  <div class="as"><div class="as-n">5</div><div class="as-b"><div class="as-t">Output 71-bit Codeword</div><div class="as-d">Final codeword = 7 parity bits + 64 data bits = 71 bits total</div><div class="as-data" id="lg-step5">No codeword generated yet.</div></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-hdr"><div class="card-ttl">PARITY CALCULATION DETAIL</div></div>
+              <div class="card-body">
+                <p class="card-dsc-p">Each parity bit covers positions where its own bit index is set in the binary representation of the position number.</p>
+                <div id="parityCalcDetail" class="pcd"><div class="pcd-ph">Encode data first to see actual parity calculations.</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:1.25rem">
+            <div class="card-hdr"><div class="card-ttl">SYNDROME DETECTION LOGIC</div></div>
+            <div class="card-body">
+              <div class="algo">
+                <div class="as"><div class="as-n">1</div><div class="as-b"><div class="as-t">Re-check Each Parity</div><div class="as-d">Compute S<sub>k</sub> = XOR of all bits covered by P<sub>k</sub> in the received codeword</div></div></div>
+                <div class="as"><div class="as-n">2</div><div class="as-b"><div class="as-t">Form Syndrome Word</div><div class="as-d">S = S₆₄S₃₂S₁₆S₈S₄S₂S₁ (binary). S = 0000000 → no error.</div></div></div>
+                <div class="as"><div class="as-n">3</div><div class="as-b"><div class="as-t">Identify Error Position</div><div class="as-d">The decimal value of the syndrome gives the exact error position (1-indexed).</div></div></div>
+                <div class="as"><div class="as-n">4</div><div class="as-b"><div class="as-t">Correct the Error</div><div class="as-d">Flip the bit at the syndrome position. The codeword is restored.</div></div></div>
+              </div>
+              <div id="curSynDisplay" class="cur-syn" style="display:none">
+                <div class="csd-lbl">CURRENT SYNDROME (from last detection)</div>
+                <div class="csd-val" id="csdVal">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: MATRIX -->
+        <div class="tab-panel hidden" id="mt-matrix">
+          <div class="card">
+            <div class="card-hdr"><div class="card-ttl">ADVANCED HAMMING MATRIX REPRESENTATION</div><div class="card-dsc">Mathematical matrix formulation. For advanced study only.</div></div>
+            <div class="card-body">
+              <div class="mx-explain">
+                <div class="mx-blk"><div class="mx-t">Parity-Check Matrix (H)</div><p class="card-dsc-p">The H matrix is 7×71 where column j is the 7-bit binary representation of j. The syndrome is:</p><div class="math-f" style="font-size:1.1rem">S = H · r<sup>T</sup></div><p class="card-dsc-p">If S = 0, no error. If S ≠ 0, S as decimal gives the error position.</p></div>
+                <div class="mx-blk"><div class="mx-t">Generator Matrix (G)</div><p class="card-dsc-p">The G matrix encodes data vector d into codeword c:</p><div class="math-f" style="font-size:1.1rem">c = d · G</div><p class="card-dsc-p">G is 64×71. Each row places a data bit and marks which parity bits it influences.</p></div>
+              </div>
+              <div class="mx-actions">
+                <button class="btn btn-sec" id="toggleMatrixBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>SHOW MATRIX</button>
+                <span class="mx-note">⚠ The full H matrix (7×71) is large. Use horizontal scrolling to view.</span>
+              </div>
+              <div class="hidden" id="matrixDisplayArea">
+                <div class="mx-block"><div class="mx-block-t">Generator Matrix G (64 × 71)</div><div class="mx-scroll"><pre class="mx-pre" id="generatorMatrixContent"></pre></div></div>
+                <div class="mx-block" style="margin-top:1.25rem"><div class="mx-block-t">Parity-Check Matrix H (7 × 71)</div><div class="mx-scroll"><pre class="mx-pre" id="parityCheckMatrixContent"></pre></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: VERIFY ═══════ -->
+      <section class="page hidden" id="pg-verify">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">VERIFICATION</h1><p class="ph-sub">Full simulation summary and data integrity confirmation</p></div>
+          <div class="stage-bdg" id="vfy-badge">○ WAITING</div>
+        </div>
+        <div class="lock-notice" id="vfy-lock">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div><strong>Complete the full workflow first.</strong> Encode → Inject Error → Detect → Correct.</div>
+        </div>
+        <div id="vfy-workspace" class="hidden">
+          <div class="sec-lbl">SIMULATION SUMMARY</div>
+          <div class="g4" style="margin-bottom:1.5rem">
+            <div class="res-card" style="border-color:var(--c-grn-b)"><div class="rc-lbl">INPUT DATA</div><div class="rc-val sm-val grn-val" id="vfy-input">—</div></div>
+            <div class="res-card" style="border-color:var(--c-err-b)"><div class="rc-lbl">ERROR POSITION</div><div class="rc-val" style="color:var(--c-err)" id="vfy-errpos">—</div></div>
+            <div class="res-card"><div class="rc-lbl">SYNDROME</div><div class="rc-val sm-val" id="vfy-syndrome">—</div></div>
+            <div class="res-card"><div class="rc-lbl">DATA MATCH</div><div class="rc-val" id="vfy-match">—</div></div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-ttl">COMPLETE SIMULATION TRACE</div></div>
+            <div class="card-body"><div class="sim-trace" id="simTrace"></div></div>
+          </div>
+          <div class="fvb" id="fvb"><div class="fvb-ico" id="fvbIco">?</div><div><div class="fvb-ttl" id="fvbTtl">—</div><div class="fvb-dsc" id="fvbDsc">—</div></div></div>
+        </div>
+      </section>
+
+      <!-- ═══════ PAGE: ABOUT ═══════ -->
+      <section class="page hidden" id="pg-about">
+        <div class="ph">
+          <div class="ph-text"><h1 class="ph-title">ABOUT THIS PROJECT</h1><p class="ph-sub">64-bit Hamming Code Interactive Laboratory</p></div>
+        </div>
+        <div class="g2">
+          <div class="card"><div class="card-hdr"><div class="card-ttl">PROJECT OVERVIEW</div></div><div class="card-body"><p class="card-dsc-p">A professional interactive educational simulator for the <strong>64-bit Hamming Code</strong>, designed for <strong>Computer Organization &amp; Architecture</strong> and <strong>Computer Networks</strong> coursework.</p><p class="card-dsc-p" style="margin-top:0.75rem">Implements the complete SEC (Single-Error Correction) workflow: encode 64 data bits into a 71-bit Hamming codeword, inject controlled single-bit errors, perform syndrome-based detection, and correct to recover original data.</p><p class="card-dsc-p" style="margin-top:0.75rem;font-style:italic;padding-top:0.75rem;border-top:1px solid var(--c-bdr)">⚠ This simulator demonstrates Single-Error Correction (SEC) only. It does not correct multiple simultaneous bit errors.</p></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-ttl">TECHNICAL SPECIFICATIONS</div></div><div class="card-body"><table class="spec-t"><tr><td>Data bits (m)</td><td><strong>64</strong></td></tr><tr><td>Parity bits (r)</td><td><strong>7</strong></td></tr><tr><td>Codeword length (n)</td><td><strong>71</strong></td></tr><tr><td>Parity positions</td><td><strong>1, 2, 4, 8, 16, 32, 64</strong></td></tr><tr><td>Error model</td><td><strong>Single-bit error (SEC)</strong></td></tr><tr><td>Detection method</td><td><strong>Syndrome calculation</strong></td></tr><tr><td>Correction method</td><td><strong>Bit flip at syndrome position</strong></td></tr><tr><td>Implementation</td><td><strong>Vanilla HTML / CSS / JS</strong></td></tr></table></div></div>
+        </div>
+        <div class="g2" style="margin-top:1.25rem">
+          <div class="card"><div class="card-hdr"><div class="card-ttl">WORKFLOW DESIGN</div></div><div class="card-body"><p class="card-dsc-p">Every stage requires an explicit user action. Detection never runs automatically. Correction never runs automatically.</p><div class="about-flow"><span class="af-s">INPUT</span><span class="af-a">→</span><span class="af-s">ENCODE</span><span class="af-a">→</span><span class="af-s">INJECT</span><span class="af-a">→</span><span class="af-s">DETECT</span><span class="af-a">→</span><span class="af-s">CORRECT</span><span class="af-a">→</span><span class="af-s">VERIFY</span></div></div></div>
+          <div class="card"><div class="card-hdr"><div class="card-ttl">TECHNOLOGIES</div></div><div class="card-body"><div class="tech-list"><div class="tech-i"><span class="tech-b">HTML5</span>Semantic markup &amp; structure</div><div class="tech-i"><span class="tech-b">CSS3</span>Grid layout, variables, responsive</div><div class="tech-i"><span class="tech-b">JavaScript</span>Vanilla ES6+ — zero dependencies</div><div class="tech-i"><span class="tech-b">Google Fonts</span>JetBrains Mono &amp; Inter</div></div></div></div>
+        </div>
+        <div class="card" style="margin-top:1.25rem"><div class="card-body" style="text-align:center;padding:1.5rem"><p style="font-size:0.85rem;color:var(--c-dim)">© 2026 Hamming Code Interactive Laboratory · Computer Organization &amp; Architecture · Computer Networks</p></div></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
